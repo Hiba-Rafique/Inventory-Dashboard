@@ -36,7 +36,7 @@ Accessories/
 
 | Layer    | Technology                          |
 | -------- | ----------------------------------- |
-| Frontend | Flutter (Dart), Provider, Google Fonts |
+| Frontend | Flutter (Dart), ValueNotifier, Google Fonts |
 | Backend  | Node.js, Express 5, Firebase Admin  |
 | Database | Firebase (Firestore)                |
 

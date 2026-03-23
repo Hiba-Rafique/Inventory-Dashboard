@@ -1,148 +1,154 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../models/category.dart';
 import '../models/material_item.dart';
 import '../state/inventory_store.dart';
 
 class InventoryScreen extends StatefulWidget {
-  const InventoryScreen({super.key});
+  final InventoryStore store;
+
+  const InventoryScreen({super.key, required this.store});
 
   @override
   State<InventoryScreen> createState() => _InventoryScreenState();
 }
 
 class _InventoryScreenState extends State<InventoryScreen> {
+  InventoryStore get store => widget.store;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<InventoryStore>().refresh();
+      store.refresh();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final store = context.watch<InventoryStore>();
-    final scheme = Theme.of(context).colorScheme;
+    return ValueListenableBuilder<InventoryState>(
+      valueListenable: store.state,
+      builder: (context, s, _) {
+        final scheme = Theme.of(context).colorScheme;
 
-    Category? selectedCategory;
-    final selectedId = store.selectedCategoryId;
-    if (selectedId != null) {
-      for (final c in store.categories) {
-        if (c.id == selectedId) {
-          selectedCategory = c;
-          break;
+        Category? selectedCategory;
+        final selectedId = s.selectedCategoryId;
+        if (selectedId != null) {
+          for (final c in s.categories) {
+            if (c.id == selectedId) {
+              selectedCategory = c;
+              break;
+            }
+          }
         }
-      }
-    }
 
-    final title = store.mode == MaterialsViewMode.all
-        ? 'All Materials'
-        : (selectedCategory?.name ?? 'By Category');
+        final title = s.mode == MaterialsViewMode.all
+            ? 'All Materials'
+            : (selectedCategory?.name ?? 'By Category');
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final wide = constraints.maxWidth >= 900;
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 900;
 
-        final categoriesPane = _CategoriesPane(
-          categories: store.categories,
-          categoryCounts: store.categoryCounts,
-          allMaterialsCount: store.allMaterialsCount,
-          selectedCategoryId: store.selectedCategoryId,
-          onSelect: store.selectCategory,
-          onAdd: () => _showAddCategoryDialog(context),
-          onDelete: (id) => store.deleteCategory(id),
-        );
+            final categoriesPane = _CategoriesPane(
+              categories: s.categories,
+              categoryCounts: s.categoryCounts,
+              allMaterialsCount: s.allMaterialsCount,
+              selectedCategoryId: s.selectedCategoryId,
+              onSelect: store.selectCategory,
+              onAdd: () => _showAddCategoryDialog(context),
+              onDelete: (id) => store.deleteCategory(id),
+            );
 
-        final body = Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
-              child: _ClayPanel(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                radius: 16.0,
-                child: Row(
-                  children: [
-                    if (!wide)
-                      IconButton(
-                        onPressed: () => Scaffold.of(context).openDrawer(),
-                        icon: const Icon(Icons.menu),
-                      ),
-                    Text(title, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(width: 12),
-                    SegmentedButton<MaterialsViewMode>(
-                      segments: const [
-                        ButtonSegment(value: MaterialsViewMode.all, label: Text('All')),
-                        ButtonSegment(value: MaterialsViewMode.byCategory, label: Text('By Category')),
-                      ],
-                      selected: {store.mode},
-                      onSelectionChanged: (s) {
-                        if (s.isEmpty) return;
-                        store.setMode(s.first);
-                      },
-                      style: ButtonStyle(
-                        shape: WidgetStateProperty.all(const StadiumBorder()),
-                        padding: WidgetStateProperty.all(
-                          const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            final body = Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+                  child: _ClayPanel(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    radius: 8.0,
+                    child: Row(
+                      children: [
+                        if (!wide)
+                          IconButton(
+                            onPressed: () => Scaffold.of(context).openDrawer(),
+                            icon: const Icon(Icons.menu),
+                          ),
+                        Text(title, style: Theme.of(context).textTheme.titleLarge),
+                        const SizedBox(width: 12),
+                        SegmentedButton<MaterialsViewMode>(
+                          segments: const [
+                            ButtonSegment(value: MaterialsViewMode.all, label: Text('All')),
+                            ButtonSegment(value: MaterialsViewMode.byCategory, label: Text('By Category')),
+                          ],
+                          selected: {s.mode},
+                          onSelectionChanged: (sel) {
+                            if (sel.isEmpty) return;
+                            store.setMode(sel.first);
+                          },
+                          style: ButtonStyle(
+                            shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                            padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            ),
+                          ),
                         ),
-                      ),
+                        const Spacer(),
+                        FilledButton.icon(
+                          onPressed: s.loading ? null : () => _showAddMaterialDialog(context),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Material'),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    FilledButton.icon(
-                      onPressed: store.loading ? null : () => _showAddMaterialDialog(context),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add Material'),
+                  ),
+                ),
+                if (s.error != null)
+                  Container(
+                    width: double.infinity,
+                    color: scheme.errorContainer,
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      s.error!,
+                      style: TextStyle(color: scheme.onErrorContainer),
                     ),
+                  ),
+                Expanded(
+                  child: _MaterialsList(
+                    loading: s.loading,
+                    materials: s.materials,
+                    categories: s.categories,
+                    onEdit: (m) => _showEditMaterialDialog(context, m),
+                    onDelete: (id) => store.deleteMaterial(id),
+                  ),
+                ),
+              ],
+            );
+
+            if (wide) {
+              return Scaffold(
+                body: Row(
+                  children: [
+                    SizedBox(width: 280, child: categoriesPane),
+                    const VerticalDivider(width: 1),
+                    Expanded(child: body),
                   ],
                 ),
-              ),
-            ),
-            if (store.error != null)
-              Container(
-                width: double.infinity,
-                color: scheme.errorContainer,
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  store.error!,
-                  style: TextStyle(color: scheme.onErrorContainer),
-                ),
-              ),
-            Expanded(
-              child: _MaterialsList(
-                loading: store.loading,
-                materials: store.materials,
-                categories: store.categories,
-                onEdit: (m) => _showEditMaterialDialog(context, m),
-                onDelete: (id) => store.deleteMaterial(id),
-              ),
-            ),
-          ],
-        );
+              );
+            }
 
-        if (wide) {
-          return Scaffold(
-            body: Row(
-              children: [
-                SizedBox(width: 280, child: categoriesPane),
-                const VerticalDivider(width: 1),
-                Expanded(child: body),
-              ],
-            ),
-          );
-        }
-
-        return Scaffold(
-          drawer: Drawer(child: SafeArea(child: categoriesPane)),
-          body: body,
+            return Scaffold(
+              drawer: Drawer(child: SafeArea(child: categoriesPane)),
+              body: body,
+            );
+          },
         );
       },
     );
   }
 
   Future<void> _showAddCategoryDialog(BuildContext context) async {
-    final store = context.read<InventoryStore>();
     final controller = TextEditingController();
 
     final result = await showDialog<String>(
@@ -171,20 +177,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Future<void> _showAddMaterialDialog(BuildContext context) async {
-    final store = context.read<InventoryStore>();
+    final s = store.state.value;
 
     final result = await showDialog<_MaterialDraft>(
       context: context,
       builder: (context) {
         return _MaterialDialog(
           title: 'Add Material',
-          categories: store.categories,
+          categories: s.categories,
           initial: _MaterialDraft(
             name: '',
             brand: '',
             unit: 'pcs',
             price: 0,
-            categoryId: store.selectedCategoryId,
+            categoryId: s.selectedCategoryId,
           ),
         );
       },
@@ -202,14 +208,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Future<void> _showEditMaterialDialog(BuildContext context, MaterialItem item) async {
-    final store = context.read<InventoryStore>();
+    final s = store.state.value;
 
     final result = await showDialog<_MaterialDraft>(
       context: context,
       builder: (context) {
         return _MaterialDialog(
           title: 'Edit Material',
-          categories: store.categories,
+          categories: s.categories,
           initial: _MaterialDraft(
             id: item.id,
             name: item.name,
@@ -263,7 +269,7 @@ class _CategoriesPane extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
           child: _ClayPanel(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            radius: 16.0,
+            radius: 8.0,
             child: Row(
               children: [
                 Text('Categories', style: Theme.of(context).textTheme.titleMedium),
@@ -343,9 +349,9 @@ class _CategoryTile extends StatelessWidget {
         isClay: selected,
         borderless: selected,
         background: Colors.white,
-        radius: 16.0,
+        radius: 8.0,
         child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           title: Row(
             children: [
               Expanded(
@@ -364,7 +370,7 @@ class _CategoryTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: selected ? const Color(0xFFBAE6FD) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   count.toString(),
@@ -482,7 +488,7 @@ class _MaterialCardState extends State<_MaterialCard> {
       transform: Matrix4.translationValues(0, _hovering ? -4.0 : 0, 0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: _hovering ? const Color(0xFFBAE6FD) : const Color(0xFFE2E8F0),
           width: _hovering ? 2 : 1,
@@ -499,7 +505,7 @@ class _MaterialCardState extends State<_MaterialCard> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(8),
           hoverColor: const Color(0xFFF0F9FF),
           highlightColor: const Color(0xFFE0F2FE),
           splashColor: const Color(0xFFBAE6FD).withOpacity(0.4),
@@ -596,7 +602,7 @@ class _Pill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: foreground.withOpacity(0.2)),
       ),
       child: Text(
@@ -626,7 +632,7 @@ class _ClayPanel extends StatelessWidget {
     this.isClay = false,
     this.background,
     this.borderless = false,
-    this.radius = 24.0,
+    this.radius = 8.0,
   });
 
   @override
