@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../models/category.dart';
@@ -64,9 +65,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
             final body = Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+                  padding: EdgeInsets.fromLTRB(wide ? 40 : 24, wide ? 40 : 24, wide ? 40 : 24, 16),
                   child: _ClayPanel(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    background: Colors.white,
                     radius: 8.0,
                     child: Row(
                       children: [
@@ -75,8 +77,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             onPressed: () => Scaffold.of(context).openDrawer(),
                             icon: const Icon(Icons.menu),
                           ),
-                        Text(title, style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(width: 12),
+                        Text(
+                          title.toUpperCase(),
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: const Color(0xFF0284C7),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2.0,
+                          ),
+                        ),
+                        const Spacer(),
                         SegmentedButton<MaterialsViewMode>(
                           segments: const [
                             ButtonSegment(value: MaterialsViewMode.all, label: Text('All')),
@@ -87,17 +97,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                             if (sel.isEmpty) return;
                             store.setMode(sel.first);
                           },
-                          style: ButtonStyle(
-                            shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                            padding: WidgetStateProperty.all(
-                              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                            ),
-                          ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 16),
                         FilledButton.icon(
                           onPressed: s.loading ? null : () => _showAddMaterialDialog(context),
-                          icon: const Icon(Icons.add),
+                          icon: const Icon(Icons.add_task, size: 18),
                           label: const Text('Add Material'),
                         ),
                       ],
@@ -130,8 +134,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
               return Scaffold(
                 body: Row(
                   children: [
-                    SizedBox(width: 280, child: categoriesPane),
-                    const VerticalDivider(width: 1),
+                    SizedBox(width: 320, child: categoriesPane), // --space-8 unit roughly
+                    Container(width: 1, color: const Color(0xFFE2E8F0)),
                     Expanded(child: body),
                   ],
                 ),
@@ -155,7 +159,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Add Category'),
+          title: Text('Add Category', style: Theme.of(context).textTheme.titleLarge),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -266,18 +270,29 @@ class _CategoriesPane extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+          padding: const EdgeInsets.fromLTRB(24, 40, 24, 16), // Page margin top 40px
           child: _ClayPanel(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            background: const Color(0xFFF0F9FF),
             radius: 8.0,
             child: Row(
               children: [
-                Text('Categories', style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'CATEGORIES',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: const Color(0xFF0369A1),
+                    fontSize: 11,
+                    letterSpacing: 2.0,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const Spacer(),
-                FilledButton.icon(
+                IconButton(
                   onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add'),
+                  icon: const Icon(Icons.add_circle, color: Color(0xFF0284C7), size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'Add Category',
                 ),
               ],
             ),
@@ -285,7 +300,7 @@ class _CategoriesPane extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
             itemCount: categories.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -341,50 +356,37 @@ class _CategoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: _ClayPanel(
         isClay: selected,
-        borderless: selected,
         background: Colors.white,
-        radius: 8.0,
+        radius: 6.0, // --r-md for badges/items
         child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           title: Row(
             children: [
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
-                    color: selected ? const Color(0xFF0369A1) : const Color(0xFF475569),
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                    color: selected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                    fontSize: 14,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: selected ? const Color(0xFFBAE6FD) : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  count.toString(),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: selected ? const Color(0xFF0284C7) : const Color(0xFF64748B),
-                  ),
-                ),
+              _Pill(
+                text: count.toString(),
+                background: selected ? const Color(0xFF0284C7) : const Color(0xFFE0F2FE),
+                foreground: selected ? Colors.white : const Color(0xFF0369A1),
               ),
             ],
           ),
           trailing: trailing,
-          selectedColor: scheme.primary,
           onTap: onTap,
         ),
       ),
@@ -422,6 +424,7 @@ class _MaterialsList extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final wide = constraints.maxWidth > 900;
         int columns = 1;
         if (constraints.maxWidth > 900) {
           columns = 4;
@@ -432,12 +435,12 @@ class _MaterialsList extends StatelessWidget {
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          padding: EdgeInsets.fromLTRB(wide ? 40 : 24, 0, wide ? 40 : 24, wide ? 40 : 24),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
-            crossAxisSpacing: 14,
-            mainAxisSpacing: 14,
-            mainAxisExtent: 170, // fixed height for elegant cards
+            crossAxisSpacing: 16, // --space-4
+            mainAxisSpacing: 16,
+            mainAxisExtent: 180,
           ),
           itemCount: materials.length,
           itemBuilder: (context, index) {
@@ -483,23 +486,26 @@ class _MaterialCardState extends State<_MaterialCard> {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOutCubic,
-      transform: Matrix4.translationValues(0, _hovering ? -4.0 : 0, 0),
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      transform: Matrix4.translationValues(0, _hovering ? -2.0 : 0, 0),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8), // --r-lg
         border: Border.all(
-          color: _hovering ? const Color(0xFFBAE6FD) : const Color(0xFFE2E8F0),
-          width: _hovering ? 2 : 1,
+          color: const Color(0xFFE2E8F0), // --color-border
+          width: 1,
         ),
         boxShadow: _hovering
             ? const [
+                // --shadow-card-hover
                 BoxShadow(color: Color(0x1A0F172A), blurRadius: 12, offset: Offset(0, 4)),
-                BoxShadow(color: Color(0x0F0F172A), blurRadius: 32, offset: Offset(0, 8)),
+                BoxShadow(color: Color(0x120F172A), blurRadius: 28, offset: Offset(0, 12)),
               ]
             : const [
-                BoxShadow(color: Color(0x0A0F172A), blurRadius: 16, offset: Offset(0, 4)),
+                // --shadow-card
+                BoxShadow(color: Color(0x120F172A), blurRadius: 3, offset: Offset(0, 1)),
+                BoxShadow(color: Color(0x0A0F172A), blurRadius: 12, offset: Offset(0, 4)),
               ],
       ),
       child: Material(
@@ -524,6 +530,7 @@ class _MaterialCardState extends State<_MaterialCard> {
                         widget.m.name,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontSize: 18,
+                          fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F172A),
                           height: 1.2,
                         ),
@@ -564,11 +571,14 @@ class _MaterialCardState extends State<_MaterialCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(widget.currency.format(widget.m.price), style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: const Color(0xFF0284C7),
-                      fontSize: 22,
-                    )),
+                    Text(
+                      widget.currency.format(widget.m.price),
+                      style: GoogleFonts.robotoMono(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0284C7),
+                        fontSize: 20,
+                      ),
+                    ),
                     _Pill(
                       text: widget.m.unit,
                       background: const Color(0xFFE0F2FE),
@@ -599,18 +609,16 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: foreground.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(2), // --r-xs
       ),
       child: Text(
-        text.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        text,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
           color: foreground,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.8,
+          fontSize: 11,
         ),
       ),
     );
@@ -637,25 +645,27 @@ class _ClayPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Highly refined subtle shadows (flat for small, lifted for large)
+    final shadowColor = isClay ? const Color(0xFFBAE6FD) : const Color(0x0A0F172A);
+    final borderCol = isClay ? const Color(0xFFBAE6FD) : const Color(0xFFE2E8F0);
+
     return Container(
       decoration: BoxDecoration(
-        color: isClay ? null : (background ?? Colors.white),
-        gradient: isClay
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFEFF9FF), Color(0xFFBAE6FD)],
-              )
-            : null,
+        color: background ?? (isClay ? const Color(0xFFF0F9FF) : Colors.white),
         borderRadius: BorderRadius.circular(radius),
-        border: borderless ? null : (isClay ? null : Border.all(color: const Color(0xFFE2E8F0))),
-        boxShadow: isClay
-            ? const [
-                BoxShadow(color: Color(0xFF93C5FD), offset: Offset(0, 6)),
-              ]
-            : const [
-                BoxShadow(color: Color(0x0A0F172A), blurRadius: 16, offset: Offset(0, 4)),
-              ],
+        border: Border.all(color: borderCol, width: 1.5),
+        boxShadow: [
+          if (isClay)
+            const BoxShadow(
+              color: Color(0xFFBAE6FD),
+              offset: Offset(0, 4),
+              blurRadius: 0,
+            )
+          else ...[
+            const BoxShadow(color: Color(0x0A0F172A), offset: Offset(0, 1), blurRadius: 2),
+            const BoxShadow(color: Color(0x050F172A), offset: Offset(0, 4), blurRadius: 8),
+          ],
+        ],
       ),
       child: Padding(padding: padding, child: child),
     );
@@ -724,7 +734,7 @@ class _MaterialDialogState extends State<_MaterialDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
+      title: Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
       content: SizedBox(
         width: 420,
         child: SingleChildScrollView(
