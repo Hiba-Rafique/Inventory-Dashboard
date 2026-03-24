@@ -65,12 +65,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
             final body = Column(
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(wide ? 40 : 24, wide ? 40 : 24, wide ? 40 : 24, 16),
-                  child: _ClayPanel(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                    background: Colors.white,
-                    radius: 8.0,
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                  child: SizedBox(
+                    height: 40,
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         if (!wide)
                           IconButton(
@@ -81,28 +80,37 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           title.toUpperCase(),
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             color: const Color(0xFF0284C7),
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w800,
-                            letterSpacing: 2.0,
+                            letterSpacing: 0.5,
                           ),
                         ),
                         const Spacer(),
-                        SegmentedButton<MaterialsViewMode>(
-                          segments: const [
-                            ButtonSegment(value: MaterialsViewMode.all, label: Text('All')),
-                            ButtonSegment(value: MaterialsViewMode.byCategory, label: Text('By Category')),
-                          ],
-                          selected: {s.mode},
-                          onSelectionChanged: (sel) {
-                            if (sel.isEmpty) return;
-                            store.setMode(sel.first);
-                          },
+                        // Sleek Search Bar
+                        SizedBox(
+                          width: 220,
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search materials...',
+                              prefixIcon: const Icon(Icons.search, size: 18),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            style: const TextStyle(fontSize: 13),
+                          ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 12),
                         FilledButton.icon(
                           onPressed: s.loading ? null : () => _showAddMaterialDialog(context),
-                          icon: const Icon(Icons.add_task, size: 18),
-                          label: const Text('Add Material'),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Add'),
                         ),
                       ],
                     ),
@@ -132,10 +140,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
             if (wide) {
               return Scaffold(
+                backgroundColor: const Color(0xFFF8FAFC), // Slight slate-50 background for main area
                 body: Row(
                   children: [
-                    SizedBox(width: 320, child: categoriesPane), // --space-8 unit roughly
-                    Container(width: 1, color: const Color(0xFFE2E8F0)),
+                    SizedBox(width: 280, child: categoriesPane), // Increased for better text fit
                     Expanded(child: body),
                   ],
                 ),
@@ -267,40 +275,40 @@ class _CategoriesPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 40, 24, 16), // Page margin top 40px
-          child: _ClayPanel(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            background: const Color(0xFFF0F9FF),
-            radius: 8.0,
-            child: Row(
-              children: [
-                Text(
-                  'CATEGORIES',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: const Color(0xFF0369A1),
-                    fontSize: 11,
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w700,
+    return Container(
+      color: Colors.white, // Crisp white sidebar
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+            child: SizedBox(
+              height: 40,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'CATEGORIES',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: const Color(0xFF0284C7),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5, // Unified
+                    ),
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add_circle, color: Color(0xFF0284C7), size: 18),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  tooltip: 'Add Category',
-                ),
-              ],
+                  const Spacer(),
+                  IconButton(
+                    onPressed: onAdd,
+                    icon: const Icon(Icons.add, color: Color(0xFF0284C7), size: 18),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
             itemCount: categories.length + 1,
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -335,8 +343,9 @@ class _CategoriesPane extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 }
 
 class _CategoryTile extends StatelessWidget {
@@ -357,32 +366,34 @@ class _CategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: _ClayPanel(
-        isClay: selected,
-        background: Colors.white,
-        radius: 6.0, // --r-md for badges/items
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Container(
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFF0F9FF) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           title: Row(
             children: [
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
-                    color: selected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: const Color(0xFF0F172A),
                     fontSize: 14,
                   ),
-                  maxLines: 1,
+                  maxLines: 2, // Allow 2 lines for longer category names
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
               _Pill(
                 text: count.toString(),
-                background: selected ? const Color(0xFF0284C7) : const Color(0xFFE0F2FE),
-                foreground: selected ? Colors.white : const Color(0xFF0369A1),
+                background: Colors.transparent,
+                foreground: const Color(0xFF0284C7),
               ),
             ],
           ),
@@ -435,12 +446,12 @@ class _MaterialsList extends StatelessWidget {
         }
 
         return GridView.builder(
-          padding: EdgeInsets.fromLTRB(wide ? 40 : 24, 0, wide ? 40 : 24, wide ? 40 : 24),
+          padding: EdgeInsets.fromLTRB(wide ? 32 : 16, 0, wide ? 32 : 16, wide ? 32 : 16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
-            crossAxisSpacing: 16, // --space-4
-            mainAxisSpacing: 16,
-            mainAxisExtent: 180,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: 150,
           ),
           itemCount: materials.length,
           itemBuilder: (context, index) {
@@ -498,27 +509,21 @@ class _MaterialCardState extends State<_MaterialCard> {
         ),
         boxShadow: _hovering
             ? const [
-                // --shadow-card-hover
-                BoxShadow(color: Color(0x1A0F172A), blurRadius: 12, offset: Offset(0, 4)),
-                BoxShadow(color: Color(0x120F172A), blurRadius: 28, offset: Offset(0, 12)),
+                BoxShadow(color: Color(0x120F172A), blurRadius: 8, offset: Offset(0, 4)),
               ]
             : const [
-                // --shadow-card
-                BoxShadow(color: Color(0x120F172A), blurRadius: 3, offset: Offset(0, 1)),
-                BoxShadow(color: Color(0x0A0F172A), blurRadius: 12, offset: Offset(0, 4)),
+                BoxShadow(color: Color(0x0F0F172A), blurRadius: 2, offset: Offset(0, 1)),
               ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
           hoverColor: const Color(0xFFF0F9FF),
-          highlightColor: const Color(0xFFE0F2FE),
-          splashColor: const Color(0xFFBAE6FD).withOpacity(0.4),
           onTap: widget.onEdit,
           onHover: (val) => setState(() => _hovering = val),
           child: Padding(
-            padding: EdgeInsets.all(_hovering ? 19 : 20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -529,10 +534,10 @@ class _MaterialCardState extends State<_MaterialCard> {
                       child: Text(
                         widget.m.name,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F172A),
-                          height: 1.2,
+                          height: 1.1,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -576,7 +581,7 @@ class _MaterialCardState extends State<_MaterialCard> {
                       style: GoogleFonts.robotoMono(
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0284C7),
-                        fontSize: 20,
+                        fontSize: 16,
                       ),
                     ),
                     _Pill(
@@ -609,16 +614,17 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(2), // --r-xs
+        borderRadius: BorderRadius.circular(2), // --r-xs from doc
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
           color: foreground,
-          fontSize: 11,
+          fontSize: 9, // Tighter font
+          letterSpacing: 0.5,
         ),
       ),
     );

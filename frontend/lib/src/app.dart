@@ -55,6 +55,7 @@ class _AccessoriesAppState extends State<AccessoriesApp> {
       title: 'BuilderSolve',
       theme: ThemeData(
         useMaterial3: true,
+        visualDensity: VisualDensity.compact,
         colorScheme: ColorScheme.fromSeed(
           seedColor: bsBlue800,
           primary: bsBlue800,
@@ -64,28 +65,24 @@ class _AccessoriesAppState extends State<AccessoriesApp> {
           outline: bsBlue400,
         ),
         scaffoldBackgroundColor: bsBg,
-        // Typography - Using Sora as defined in doc
+        // Typography - Compact & Professional
         textTheme: GoogleFonts.soraTextTheme().copyWith(
-          displayLarge: GoogleFonts.sora(fontWeight: FontWeight.w800, color: bsCharcoal800),
-          titleLarge: GoogleFonts.sora(fontWeight: FontWeight.w700, color: bsCharcoal800, letterSpacing: -0.3),
-          titleMedium: GoogleFonts.sora(fontWeight: FontWeight.w600, color: bsCharcoal800),
-          bodyLarge: GoogleFonts.sora(fontWeight: FontWeight.w400, color: bsCharcoal500, fontSize: 17),
-          bodyMedium: GoogleFonts.sora(fontWeight: FontWeight.w400, color: bsCharcoal500, fontSize: 15),
-          bodySmall: GoogleFonts.sora(fontWeight: FontWeight.w400, color: bsCharcoal400, fontSize: 13),
-          labelLarge: GoogleFonts.sora(fontWeight: FontWeight.w700, letterSpacing: 1.5, fontSize: 11),
+          displayLarge: GoogleFonts.sora(fontWeight: FontWeight.w800, color: bsCharcoal800, fontSize: 32),
+          titleLarge: GoogleFonts.sora(fontWeight: FontWeight.w700, color: bsCharcoal800, fontSize: 18, letterSpacing: -0.2),
+          titleMedium: GoogleFonts.sora(fontWeight: FontWeight.w600, color: bsCharcoal800, fontSize: 13),
+          bodyLarge: GoogleFonts.sora(fontWeight: FontWeight.w400, color: bsCharcoal500, fontSize: 15),
+          bodyMedium: GoogleFonts.sora(fontWeight: FontWeight.w400, color: bsCharcoal500, fontSize: 13),
+          bodySmall: GoogleFonts.sora(fontWeight: FontWeight.w400, color: bsCharcoal400, fontSize: 12),
+          labelLarge: GoogleFonts.sora(fontWeight: FontWeight.w700, letterSpacing: 1.5, fontSize: 10),
         ),
-        // Button Styles - "Tactile clarity" with flat shadows
+        // Buttons - Small SPEC from doc (12px font, tight padding)
         filledButtonTheme: FilledButtonThemeData(
           style: ButtonStyle(
             backgroundColor: WidgetStateProperty.all(bsBlue800),
             foregroundColor: WidgetStateProperty.all(Colors.white),
-            padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-            textStyle: WidgetStateProperty.all(GoogleFonts.sora(fontWeight: FontWeight.w600, fontSize: 13)),
-            shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))), // --r-sm
-            elevation: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.pressed)) return 0;
-              return 0; // Handled by custom shadow decoration or simplistic approach
-            }),
+            padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 14, vertical: 7)),
+            textStyle: WidgetStateProperty.all(GoogleFonts.sora(fontWeight: FontWeight.w600, fontSize: 12)),
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -93,34 +90,47 @@ class _AccessoriesAppState extends State<AccessoriesApp> {
             backgroundColor: bsBlue800,
             foregroundColor: Colors.white,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)), // --r-sm
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           ),
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: bsBlue800,
-            side: const BorderSide(color: bsBlue400, width: 1.5),
+            side: const BorderSide(color: bsBlue400, width: 1.2),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           ),
         ),
-        // Input Decoration
+        segmentedButtonTheme: SegmentedButtonThemeData(
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 10, vertical: 4)),
+            textStyle: WidgetStateProperty.all(const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
+          ),
+        ),
+        // InputDecoration
         inputDecorationTheme: InputDecorationTheme(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
-            borderSide: const BorderSide(color: bsBlue400, width: 1.5),
+            borderSide: const BorderSide(color: bsBlue400, width: 1.2),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
-            borderSide: const BorderSide(color: bsBlue400, width: 1.5),
+            borderSide: const BorderSide(color: bsBlue400, width: 1.2),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
-            borderSide: const BorderSide(color: bsBlue800, width: 1.5),
+            borderSide: const BorderSide(color: bsBlue800, width: 1.2),
           ),
           filled: true,
           fillColor: Colors.white,
-          labelStyle: GoogleFonts.sora(fontSize: 12, fontWeight: FontWeight.w600, color: bsCharcoal500),
-          hintStyle: GoogleFonts.sora(color: bsCharcoal400),
+          labelStyle: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w600, color: bsCharcoal500),
         ),
       ),
       home: InventoryScreen(store: _store),
