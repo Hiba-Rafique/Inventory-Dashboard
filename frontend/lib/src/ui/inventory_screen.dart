@@ -8,7 +8,6 @@ import '../state/inventory_store.dart';
 
 class InventoryScreen extends StatefulWidget {
   final InventoryStore store;
-
   const InventoryScreen({super.key, required this.store});
 
   @override
@@ -17,13 +16,21 @@ class InventoryScreen extends StatefulWidget {
 
 class _InventoryScreenState extends State<InventoryScreen> {
   InventoryStore get store => widget.store;
+  late final TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
+    _searchController = TextEditingController(text: store.state.value.searchQuery);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       store.refresh();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -90,6 +97,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         SizedBox(
                           width: 220,
                           child: TextField(
+                            controller: _searchController,
+                            onChanged: (v) => store.setSearchQuery(v),
                             decoration: InputDecoration(
                               hintText: 'Search materials...',
                               prefixIcon: const Icon(Icons.search, size: 18),

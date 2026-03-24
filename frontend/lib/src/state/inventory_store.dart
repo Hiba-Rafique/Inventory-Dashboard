@@ -14,6 +14,7 @@ class InventoryState {
   final Map<String, int> categoryCounts;
   final int allMaterialsCount;
   final String? selectedCategoryId;
+  final String searchQuery;
   final MaterialsViewMode mode;
 
   const InventoryState({
@@ -24,6 +25,7 @@ class InventoryState {
     this.categoryCounts = const {},
     this.allMaterialsCount = 0,
     this.selectedCategoryId,
+    this.searchQuery = '',
     this.mode = MaterialsViewMode.all,
   });
 
@@ -37,6 +39,7 @@ class InventoryState {
     int? allMaterialsCount,
     String? selectedCategoryId,
     bool clearSelectedCategory = false,
+    String? searchQuery,
     MaterialsViewMode? mode,
   }) {
     return InventoryState(
@@ -49,6 +52,7 @@ class InventoryState {
       selectedCategoryId: clearSelectedCategory
           ? null
           : (selectedCategoryId ?? this.selectedCategoryId),
+      searchQuery: searchQuery ?? this.searchQuery,
       mode: mode ?? this.mode,
     );
   }
@@ -75,9 +79,19 @@ class InventoryStore {
     List<MaterialItem> all,
     MaterialsViewMode mode,
     String? selectedCategoryId,
+    String searchQuery,
   ) {
-    if (mode == MaterialsViewMode.all) return all;
-    return all.where((m) => m.categoryId == selectedCategoryId).toList();
+    var res = all;
+    if (selectedCategoryId != null) {
+      res = res.where((m) => m.categoryId == selectedCategoryId).toList();
+    }
+    if (searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      res = res.where((m) =>
+          m.name.toLowerCase().contains(q) ||
+          m.brand.toLowerCase().contains(q)).toList();
+    }
+    return res;
   }
 
   Map<String, int> _buildCounts(List<MaterialItem> all) {
@@ -101,7 +115,7 @@ class InventoryStore {
 
       state.value = _s.copyWith(
         categories: cats,
-        materials: _filtered(mats, _s.mode, _s.selectedCategoryId),
+        materials: _filtered(mats, _s.mode, _s.selectedCategoryId, _s.searchQuery),
         categoryCounts: _buildCounts(mats),
         allMaterialsCount: mats.length,
       );
@@ -112,7 +126,14 @@ class InventoryStore {
     if (_s.mode == mode) return;
     state.value = _s.copyWith(
       mode: mode,
-      materials: _filtered(_materialsCache, mode, _s.selectedCategoryId),
+      materials: _filtered(_materialsCache, mode, _s.selectedCategoryId, _s.searchQuery),
+    );
+  }
+
+  void setSearchQuery(String query) {
+    state.value = _s.copyWith(
+      searchQuery: query,
+      materials: _filtered(_materialsCache, _s.mode, _s.selectedCategoryId, query),
     );
   }
 
@@ -120,7 +141,7 @@ class InventoryStore {
     state.value = _s.copyWith(
       selectedCategoryId: categoryId,
       clearSelectedCategory: categoryId == null,
-      materials: _filtered(_materialsCache, _s.mode, categoryId),
+      materials: _filtered(_materialsCache, _s.mode, categoryId, _s.searchQuery),
     );
   }
 
